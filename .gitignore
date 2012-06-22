@@ -1,0 +1,7 @@
+.idea
+*.iml
+coverage
+.bundle
+tmp
+chromedriver.log
+atlassian-ide-plugin.xml
