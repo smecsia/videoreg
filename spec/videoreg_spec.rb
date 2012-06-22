@@ -1,7 +1,16 @@
 require 'spec_helper'
 
-describe Videoreg do
-  it "should instantiates" do
-    lambda { Videoreg.new }.should_not raise_error
+describe Videoreg::Registrar do
+
+  it "should be configurable" do
+
+    subject.configure do |c|
+      c.resolution = '640x480'
+      c.command = 'test command #{resolution}'
+    end
+
+    subject.resolution.should == '640x480'
+    subject.cmd.should == 'test command 640x480'
+
   end
 end
