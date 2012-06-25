@@ -7,5 +7,6 @@ Gem::Specification.new do |s|
   s.authors = ["Ilya Sadykov"]
   s.email = 'i.sadykov@i-free.com'
   s.add_development_dependency 'rspec', '~> 2.10.0'
+  s.add_runtime_dependency 'daemons', '~> 1.1.8'
   s.files = %w(lib/videoreg.rb)
 end
