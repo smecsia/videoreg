@@ -11,6 +11,11 @@ module Videoreg
       @@logger
     end
 
+    # Applies current context to the templated string
+    def tpl(str)
+      eval("\"#{str}\"")
+    end
+
     # Cross-platform way of finding an executable in the $PATH.
     #
     #   which('ruby') #=> /usr/bin/ruby

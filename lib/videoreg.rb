@@ -4,14 +4,30 @@ require_relative 'videoreg/config'
 require 'rubygems'
 require 'logger'
 
-
 module Videoreg
   class Registrar < Videoreg::Base
 
     DELEGATE_TO_CONFIG = [:cmd, :outfile, :resolution, :fps, :duration, :device, :storage]
     attr_reader :config
 
+    private
+
     public # Public methods:
+
+    def self.capture_all(*devices, &block)
+      threads = devices.map do |device|
+        Thread.new {
+          Videoreg::Registrar.capture_continuously do |conf|
+            block.call(device, conf)
+          end
+        }
+      end
+      threads.each { |t| t.join }
+    end
+
+    def self.release_locks(*locks)
+      locks.each { |lock| File.unlink(lock) if File.exists?(lock) }
+    end
 
     def self.capture_continuously(&block)
       logger.info "Starting the continuous capture..."

@@ -3,6 +3,11 @@ require_relative 'lib/videoreg'
 
 task :default => :help
 
+desc "Build gem"
+task :build do
+  %x[gem build videoreg.gemspec]
+end
+
 desc "Run specs"
 task :spec do
   RSpec::Core::RakeTask.new(:spec) do |t|
@@ -27,49 +32,28 @@ task :capture, :device, :duration, :storage do |t, args|
 end
 
 
-def lckfile(num)
-  "/tmp/videoreg.video#{num}.lck"
+def lck_file(device)
+  "/tmp/videoreg.#{device}.lock"
 end
 
 desc "Capture the video from three different devices"
-task :capture_three do |t|
-
-  r0 = Thread.new {
-    Videoreg::Registrar.capture_continuously do |c|
-      c.device = '/dev/video0'
-      c.filename = '#{time}-video0.avi'
-      c.storage = '/tmp/video0'
-      c.lockfile = lckfile(0)
-    end
-  }
-
-  r1 = Thread.new {
-    Videoreg::Registrar.capture_continuously do |c|
-      c.device = '/dev/video1'
-      c.filename = '#{time}-video1.avi'
-      c.storage = '/tmp/video1'
-      c.lockfile = lckfile(1)
-    end
-  }
-
-  r2 = Thread.new {
-    Videoreg::Registrar.capture_continuously do |c|
-      c.device = '/dev/video2'
-      c.filename = '#{time}-video2.avi'
-      c.storage = '/tmp/video2'
-      c.lockfile = lckfile(2)
-    end
-  }
-
-  r0.join
-  r1.join
-  r2.join
-
+task :capture_three do
+  Videoreg::Registrar.capture_all(
+      'device0',
+      'device1',
+      'device2') do |device, conf|
+    conf.device = '/dev/' + device
+    conf.filename = '#{time}-'+device+'.avi'
+    conf.storage = '/tmp/' + device
+    conf.lockfile = lck_file(device)
+  end
 end
 
 desc "Reset lockfiles"
 task :capture_reset do
-  File.unlink(lckfile(0)) if File.exists?(lckfile(0))
-  File.unlink(lckfile(1)) if File.exists?(lckfile(1))
-  File.unlink(lckfile(2)) if File.exists?(lckfile(2))
+  Videoreg::Registrar.release_locks(
+      lck_file('device0'),
+      lck_file('device1'),
+      lck_file('device2')
+  )
 end

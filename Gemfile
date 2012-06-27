@@ -1,6 +1,7 @@
 source :rubygems
 
 gem 'dante'
+gem 'daemons'
 
 group :test do
   gem 'rspec'

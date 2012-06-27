@@ -33,9 +33,5 @@ module Videoreg
     def cmd
       @real_command ||= tpl(command)
     end
-
-    def tpl(str)
-      eval("\"#{str}\"")
-    end
   end
 end
