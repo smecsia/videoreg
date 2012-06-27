@@ -24,37 +24,32 @@ end
 
 
 desc "Capture the video from the device"
-task :capture, :device, :duration, :storage do |t, args|
-  Videoreg::Registrar.capture_continuously do |c|
+task :videoreg, :device, :duration, :storage do |t, args|
+  Videoreg::Registrar.new do |c|
     c.device = args[:device]
     c.duration = args[:duration]
     c.storage = args[:storage]
+  end.continuous
+end
+
+
+def lck_file(devname)
+  "/tmp/videoreg.#{devname}.lock"
+end
+
+namespace :videoreg do
+  desc "Capture the video from three different devices"
+  task :three do
+    Videoreg.capture_all('/dev/video0', '/dev/video1', '/dev/video2') { |c|
+      c.filename = '#{time}-'+devname+'.avi'
+      c.storage = '/tmp/' + devname
+      c.lockfile = lck_file(devname)
+    }
+  end
+
+  desc "Reset lockfiles"
+  task :reset do
+    Videoreg.release_locks!(lck_file('video0'), lck_file('video1'), lck_file('video2'))
   end
 end
 
-
-def lck_file(device)
-  "/tmp/videoreg.#{device}.lock"
-end
-
-desc "Capture the video from three different devices"
-task :capture_three do
-  Videoreg::Registrar.capture_all(
-      'device0',
-      'device1',
-      'device2') do |device, conf|
-    conf.device = '/dev/' + device
-    conf.filename = '#{time}-'+device+'.avi'
-    conf.storage = '/tmp/' + device
-    conf.lockfile = lck_file(device)
-  end
-end
-
-desc "Reset lockfiles"
-task :capture_reset do
-  Videoreg::Registrar.release_locks(
-      lck_file('device0'),
-      lck_file('device1'),
-      lck_file('device2')
-  )
-end

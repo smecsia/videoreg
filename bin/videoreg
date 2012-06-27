@@ -4,32 +4,29 @@ require 'rubygems'
 require 'daemons'
 require 'ostruct'
 require 'optparse'
+require 'dante'
 require_relative '../lib/videoreg'
-
-
-def reg(&block)
-  @@videoreg_threads = [] unless @@videoreg_threads
-  reg = Registrar.new
-  reg.config.instance_eval(&block)
-  @@videoreg_threads << reg.run
-end
-
-def wait
-  @@videoreg_threads.each { |t| t.join }
-end
 
 options = OpenStruct.new
 options.script_name = File.basename($0)
 ARGV.options do |parser|
   parser.banner = "Usage: #{options.script_name} [options]"
 
-  parser.on('-r CONFIG', '--run CONFIG', 'run ruby script') do |script|
-    if script && File.exists?(script)
-      Daemons.daemonize
-      load(script)
-    end
+  parser.on('-s CONFIG', '--start CONFIG', 'Run ruby script') do |script|
+    options.script = script
   end
+  parser.on('-r', '--reset', 'Reset state (remove lock-files)') {
+    Videoreg.perform_action = :clear
+  }
   parser.on('-h', '--help', 'Show this help message') { puts parser; exit }
-  puts parser
+  parser.parse!
+
+  if options.script && File.exists?(options.script)
+    Dante.run('videoreg') do
+      load(options.script)
+    end
+  else
+    puts parser
+  end
 end
 

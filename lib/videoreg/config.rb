@@ -2,24 +2,15 @@ require_relative 'base'
 module Videoreg
   class Config < Base
 
-    attr_accessor :device
-    attr_accessor :resolution
-    attr_accessor :fps
-    attr_accessor :duration
-    attr_accessor :command
-    attr_accessor :filename
-    attr_accessor :storage
-    attr_accessor :lockfile
-
     def initialize
       @device = '/dev/video1'
       @resolution = '320x240'
       @fps = 25
       @duration = 10
-      @filename = '#{time}-video1.avi'
+      @filename = '#{time}-#{devname}.DEFAULT.avi'
       @command = 'ffmpeg -r #{fps} -s #{resolution} -f video4linux2 -r ntsc -i #{device} -vcodec  mjpeg -t #{duration} -an -y #{outfile}'
-      @storage = '/tmp/video1'
-      @lockfile = '/tmp/videoreg.video1.lck'
+      @storage = '/tmp/#{devname}'
+      @lockfile = '/tmp/videoreg.#{devname}.DEFAULT.lck'
     end
 
     def time
@@ -27,11 +18,21 @@ module Videoreg
     end
 
     def outfile
-      @outfile ||= "#{storage}/#{tpl(filename)}"
+      "#{storage}/#{filename}"
     end
 
-    def cmd
-      @real_command ||= tpl(command)
+    def method_missing(*args)
+      if args.length == 1
+        tpl(eval("@#{args[0]}"))
+      elsif args.length == 2
+        eval("@#{args[0]}='#{args[1]}'")
+      else
+        super
+      end
+    end
+
+    def devname
+      device.split('/').last
     end
   end
 end

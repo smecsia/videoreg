@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.description = %q{Video Registration scripts. Allows to register continuously}
 
   s.add_development_dependency 'rspec', '~> 2.10.0'
-  s.add_runtime_dependency 'daemons', '~> 1.1.8'
+  s.add_runtime_dependency 'dante'
 
   s.files = `git ls-files`.split("\n")
   s.test_files = `git ls-files -- {test,spec,features}/*`.split("\n")
