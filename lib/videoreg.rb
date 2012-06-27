@@ -63,13 +63,17 @@ end
 
 # Shortcut to run all registrars continuous
 def run(device = :all)
+  Videoreg::Base.logger.info("Starting command '#{Videoreg.perform_action}' for device: '#{device}'...")
+  registrars = Videoreg.registrars.find_all { |dev, reg| device.to_sym == :all || device == dev }.map { |vp| vp[1] }
   case Videoreg.perform_action
     when :run then
-      Videoreg.registrars.find_all { |dev, reg| device == :all || device == dev }.map { |reg_pair|
-        Thread.new { reg_pair[1].continuous }
+      registrars.map { |reg|
+        Videoreg::Base.logger.info("Starting continuous registration with device #{reg.device}...")
+        Thread.new { reg.continuous }
       }.each { |t| t.join }
     when :clear then
-      Videoreg.registrars.each { |dev, reg|
+      registrars.each { |reg|
+        Videoreg::Base.logger.info("Removing lockfile #{reg.config.lockfile}...")
         Videoreg.release_locks!(reg.config.lockfile)
       }
   end
