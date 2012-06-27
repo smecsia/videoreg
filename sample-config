@@ -1,0 +1,22 @@
+reg {
+  device      '/dev/video0'
+  resolution  '320x240'
+  fps         25
+  duration    30
+  filename    '#{time}-video0.avi'
+  storage     '/tmp/video0'
+  lockfile    '/tmp/videoreg.video0.lock'
+}
+
+reg {
+  device      '/dev/video1'
+  resolution  '320x240'
+  fps         25
+  duration    30
+  filename    '#{time}-video1.avi'
+  storage     '/tmp/video1'
+  lockfile    '/tmp/videoreg.video1.lock'
+}
+
+run opt.device
+

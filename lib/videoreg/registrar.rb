@@ -1,3 +1,5 @@
+require 'open4'
+
 module Videoreg
   class Registrar < Videoreg::Base
     DELEGATE_TO_CONFIG = [:command, :outfile, :resolution, :fps, :duration, :device, :storage]
@@ -27,8 +29,8 @@ module Videoreg
           return
         end
         begin
-          run # perform one registration
           logger.info "Waiting for registrar (#{device}) to finish the part (#{outfile})..."
+          run # perform one registration
           logger.info "Registrar (#{device}) has finished to capture the part (#{outfile})..."
         rescue RuntimeError => e
           logger.error(e.message)
@@ -46,9 +48,10 @@ module Videoreg
       logger.info "Running the command: '#{command}'..."
       base_cmd = command.split(" ").first
       raise "#{base_cmd} not found on your system. Please install it or add it to your PATH" if which(base_cmd).nil? && !File.exists?(base_cmd)
-      IO.popen(command, "r") do |io|
-        raise "Cannot lock the lock-file '#{config.lockfile}'..." unless lock(io.pid)
-        raise "FATAL ERROR: Cannot save video!" if error?(io.read)
+      Open4::popen4(command) do |pid, stdin, stdout, stderr|
+        raise "Cannot lock the lock-file '#{config.lockfile}'..." unless lock(pid)
+        output = stdout.read + stderr.read
+        raise "FATAL ERROR: Cannot capture video: \n #{output}" if error?(output)
       end
       release
     end

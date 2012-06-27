@@ -1,10 +1,19 @@
 require 'logger'
+require 'stringio'
 module Videoreg
   class Base
     @@logger = ::Logger.new(STDOUT)
 
     def logger
-      @@logger
+      self.class.logger
+    end
+
+    def logger=(log)
+      self.class.logger=log
+    end
+
+    def self.logger=(log)
+      @@logger = log
     end
 
     def self.logger

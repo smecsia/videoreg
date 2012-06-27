@@ -7,24 +7,27 @@ require 'optparse'
 require 'dante'
 require_relative '../lib/videoreg'
 
-options = OpenStruct.new
-options.script_name = File.basename($0)
 ARGV.options do |parser|
-  parser.banner = "Usage: #{options.script_name} [options]"
-
-  parser.on('-s CONFIG', '--start CONFIG', 'Run ruby script') do |script|
-    options.script = script
-  end
-  parser.on('-r', '--reset', 'Reset state (remove lock-files)') {
-    Videoreg.perform_action = :clear
-  }
+  parser.banner = "Usage: #{File.basename($0)} [options]"
+  parser.on('-s', '--start CONFIG', 'Run video registration using specified config') { |s| opt.script = s }
+  parser.on('-d', '--device DEVICE', 'Run only the specified device') { |d| opt.device = d }
+  parser.on('-P', '--pid PID', 'Sets the PID file for the capture process') { |pid| opt.pid_path = pid }
+  parser.on('-l', '--log LOGFILE', 'Sets the logfile for daemon') { |log| opt.log_path = log }
+  parser.on('-r', '--reset', 'Reset state (remove lock-files)') { opt.action = :clear }
+  parser.on('-k', '--kill', 'Kills the capture processes') { opt.action = :kill }
   parser.on('-h', '--help', 'Show this help message') { puts parser; exit }
   parser.parse!
 
-  if options.script && File.exists?(options.script)
-    Dante.run('videoreg') do
-      load(options.script)
+  if opt.script
+    unless File.exists?(opt.script)
+      puts "File #{opt.script} does not exist!"
+      exit
     end
+
+    dante_opts = {:daemonize => opt.action == :run, :pid_path => '/tmp/videoreg.pid', :log_path => opt.log_path}
+    dante_opts = dante_opts.merge(:kill => true) if opt.action == :kill
+    dante_opts = dante_opts.merge(:pid_path => opt.pid_path) if opt.pid_path
+    Dante.run('videoreg', dante_opts) { load(opt.script) }
   else
     puts parser
   end

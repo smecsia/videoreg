@@ -2,19 +2,19 @@ Dir[File.dirname(__FILE__)+"/videoreg/*.rb"].each { |f| require f }
 require 'rubygems'
 require 'logger'
 
+
 ####################################################
 # Main videoreg module
 module Videoreg
 
   @@registered_regs = {}
-  @@perform_action = :run
+  @@run_options = OpenStruct.new(:device => :all,
+                                 :action => :run,
+                                 :log_path => 'videoreg.log',
+                                 :pid_path => '/tmp/videoreg.pid')
 
-  def self.perform_action=(value)
-    @@perform_action = value
-  end
-
-  def self.perform_action
-    @@perform_action
+  def self.run_options
+    @@run_options
   end
 
   def self.registrars
@@ -63,12 +63,12 @@ end
 
 # Shortcut to run all registrars continuous
 def run(device = :all)
-  Videoreg::Base.logger.info("Starting command '#{Videoreg.perform_action}' for device: '#{device}'...")
+  Videoreg::Base.logger.info("Starting command '#{opt.action}' for device: '#{device}'...")
   registrars = Videoreg.registrars.find_all { |dev, reg| device.to_sym == :all || device == dev }.map { |vp| vp[1] }
-  case Videoreg.perform_action
+  case opt.action
     when :run then
       registrars.map { |reg|
-        Videoreg::Base.logger.info("Starting continuous registration with device #{reg.device}...")
+        Videoreg::Base.logger.info("Starting continuous registration from device #{reg.device}...")
         Thread.new { reg.continuous }
       }.each { |t| t.join }
     when :clear then
@@ -77,4 +77,13 @@ def run(device = :all)
         Videoreg.release_locks!(reg.config.lockfile)
       }
   end
+  Signal.add_trap(0) {
+    File.unlink(opt.pid_path) if File.exists?(opt.pid_path)
+  }
 end
+
+# Options
+def opt
+  Videoreg.run_options
+end
+

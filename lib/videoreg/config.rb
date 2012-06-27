@@ -17,10 +17,16 @@ module Videoreg
       "#{Time.new.strftime("%Y%m%d-%H%M%S%L")}"
     end
 
+    def logger
+      @logger || self.class.logger
+    end
+
     def outfile
       "#{storage}/#{filename}"
     end
 
+    # set or get inner variable value
+    # depending on arguments count
     def method_missing(*args)
       if args.length == 1
         tpl(eval("@#{args[0]}"))
