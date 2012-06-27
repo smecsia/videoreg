@@ -6,3 +6,4 @@ tmp
 chromedriver.log
 atlassian-ide-plugin.xml
 *.gem
+*.log

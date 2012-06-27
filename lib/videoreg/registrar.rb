@@ -29,6 +29,8 @@ module Videoreg
           return
         end
         begin
+          logger.info "Cleaning old files from storage (#{storage})... (MAX: #{config.store_max})"
+          clean_old_files!
           logger.info "Waiting for registrar (#{device}) to finish the part (#{outfile})..."
           run # perform one registration
           logger.info "Registrar (#{device}) has finished to capture the part (#{outfile})..."
@@ -54,6 +56,18 @@ module Videoreg
         raise "FATAL ERROR: Cannot capture video: \n #{output}" if error?(output)
       end
       release
+    end
+
+    def clean_old_files!
+      all_saved_files = Dir[Pathname.new(storage).join("*#{File.extname(config.filename)}").to_s].sort_by { |c|
+        File.stat(c).ctime
+      }.reverse
+      if all_saved_files.length > config.store_max.to_i
+        all_saved_files[config.store_max.to_i..-1].each do |saved_file|
+          logger.info "Removing saved file #{saved_file}..."
+          File.unlink(saved_file) if File.exists?(saved_file)
+        end
+      end
     end
 
     def device_exists?

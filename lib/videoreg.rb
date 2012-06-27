@@ -1,7 +1,7 @@
 Dir[File.dirname(__FILE__)+"/videoreg/*.rb"].each { |f| require f }
 require 'rubygems'
 require 'logger'
-
+require 'ostruct'
 
 ####################################################
 # Main videoreg module

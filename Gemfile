@@ -2,7 +2,7 @@ source :rubygems
 
 gem 'dante'
 gem 'open4'
-gem 'daemons'
+gem 'god'
 
 group :test do
   gem 'rspec'
