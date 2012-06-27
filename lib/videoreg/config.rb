@@ -22,8 +22,8 @@ module Videoreg
       @logger || self.class.logger
     end
 
-    def store_max
-      @store_max.to_i
+    def store_max(*args)
+      (args.length > 0) ? (self.store_max=(args.shift)) : (@store_max.to_i)
     end
 
     def outfile

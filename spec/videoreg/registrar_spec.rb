@@ -21,5 +21,13 @@ describe Videoreg::Registrar do
     }.should change {
       Dir[tmpdir.join('*.avi').to_s].length
     }.to(reg.config.store_max)
+
+
+    lambda {
+      reg.clean_old_files!
+    }.should_not change {
+      Dir[tmpdir.join('*.avi').to_s].length
+    }
+
   end
 end

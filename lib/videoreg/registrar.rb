@@ -1,4 +1,5 @@
 require 'open4'
+require 'pathname'
 
 module Videoreg
   class Registrar < Videoreg::Base
