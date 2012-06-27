@@ -5,14 +5,17 @@ require 'rubygems'
 require 'logger'
 
 module Videoreg
+
   class Registrar < Videoreg::Base
 
     DELEGATE_TO_CONFIG = [:cmd, :outfile, :resolution, :fps, :duration, :device, :storage]
     attr_reader :config
 
-    private
-
     public # Public methods:
+
+    def initialize
+      @config = Videoreg::Config.new
+    end
 
     def self.capture_all(*devices, &block)
       threads = devices.map do |device|
@@ -53,7 +56,6 @@ module Videoreg
     end
 
     def configure
-      @config = Videoreg::Config.new
       @thread = nil
       yield @config
     end
@@ -105,5 +107,4 @@ module Videoreg
     end
 
   end
-
 end

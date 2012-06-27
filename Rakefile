@@ -4,8 +4,9 @@ require_relative 'lib/videoreg'
 task :default => :help
 
 desc "Build gem"
-task :build do
+task :install do
   %x[gem build videoreg.gemspec]
+  %x[sudo gem install #{Dir["*.gem"].sort.last}]
 end
 
 desc "Run specs"
