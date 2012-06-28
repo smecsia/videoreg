@@ -163,13 +163,13 @@ module Videoreg
         when :kill then
           @dante_runner.stop
         when :recover then
-          mq_send(MSG_RECOVER, device)
+          mq_send(MSG_RECOVER, device) if @dante_runner.daemon_running?
         when :ensure then
           [{:daemon_running? => @dante_runner.daemon_running?}] + @registrars.map { |reg|
             {:device => reg.device, :device_exists? => reg.device_exists?, :process_alive? => reg.process_alive?}
           }
         when :halt then
-          mq_send(MSG_HALT, device)
+          mq_send(MSG_HALT, device) if @dante_runner.daemon_running?
         when :run then
           @dante_runner.execute(:daemonize => true) {
             logger.info "Starting daemon with options: #{opt.marshal_dump}"
