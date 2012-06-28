@@ -47,15 +47,13 @@ module Videoreg
             logger.error(e.message)
             logger.info "Registrar (#{device}) has failed to capture the part (#{outfile})..."
             Thread.exit
-          ensure
-            release
           end
         end
       end
     end
 
     def run
-      logger.info "Spawning a new thread and process to capture video from device '#{device}'..."
+      logger.info "Spawning a new process to capture video from device '#{device}'..."
       raise "Lockfile already exists '#{config.lockfile}'..." if File.exist?(config.lockfile)
       logger.info "Running the command: '#{command}'..."
       raise "#{base_cmd} not found on your system. Please install it or add it to your PATH" if which(base_cmd).nil?&& !File.exists?(base_cmd)
@@ -65,6 +63,7 @@ module Videoreg
         output = stdout.read + stderr.read
         raise "FATAL ERROR: Cannot capture video: \n #{output}" if error?(output)
       end
+    ensure
       release
     end
 
@@ -93,16 +92,18 @@ module Videoreg
       @halted_mutex = nil
     end
 
+    # Kill just the underlying process
     def kill_process!
       pid = lockfile.lockcode
       begin
         logger.info("Killing the process for #{device} : #{pid}")
-        Process.kill(-9, pid.to_i) if !pid.empty? && process_alive?
+        Process.kill("KILL", pid.to_i) if !pid.empty? && process_alive?
       rescue => e
         logger.warn("An attempt to kill already killed process (#{pid}): #{e.message}")
       end
     end
 
+    # Kill completely
     def kill!
       @thread.kill if @thread
       kill_process! if process_alive?
@@ -114,7 +115,7 @@ module Videoreg
     end
 
     def force_release_lock!
-      Videoreg::Base.logger.info("Forced to release lockfile #{config.lockfile}...")
+      logger.info("Forced to release lockfile #{config.lockfile}...")
       File.unlink(config.lockfile) if File.exists?(config.lockfile)
     end
 

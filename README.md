@@ -27,14 +27,18 @@
 1. После установки скриптов на машине запуск регистрации происходит при помощи команды videoreg:
 
 	$ videoreg -h
-	Usage: videoreg [options]
-	   -s, --start CONFIG               Run video registration using specified config
-	   -d, --device DEVICE              Run only the specified device
-	   -P, --pid PID                    Sets the PID file for the capture process
-	   -l, --log LOGFILE                Sets the logfile for daemon
-	   -r, --reset                      Reset state (remove lock-files)
-	   -k, --kill                       Kills the capture processes
-	   -h, --help                       Show this help message
+    Usage: videoreg [options]
+        -c, --config CONFIG              Use the specified config
+        -d, --device DEVICE              Run only the specified device
+        -e, --ensure                     Check the state of the daemon
+        -H, --halt DEVICE                Halt (suspend) the specified device
+        -r, --recover DEVICE             Recover the device
+        -P, --pid PID                    Set the PID file for the capture process
+        -l, --log LOGFILE                Set the logfile for daemon
+        -R, --reset                      Reset the state (remove lock-files)
+        -k, --kill                       Kills the capture processes
+        -v, --version                    Show the version
+        -h, --help                       Show this help message
 
 1. Соответственно запуск демона осуществляется следующим образом:
 
