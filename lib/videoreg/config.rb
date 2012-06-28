@@ -30,6 +30,10 @@ module Videoreg
       "#{storage}/#{filename}"
     end
 
+    def base_cmd
+      command.split(" ").first
+    end
+
     # set or get inner variable value
     # depending on arguments count
     def method_missing(*args)

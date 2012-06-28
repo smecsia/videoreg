@@ -32,24 +32,3 @@ task :videoreg, :device, :duration, :storage do |t, args|
   end.continuous
 end
 
-
-def lck_file(devname)
-  "/tmp/videoreg.#{devname}.lock"
-end
-
-namespace :videoreg do
-  desc "Capture the video from three different devices"
-  task :three do
-    Videoreg.capture_all('/dev/video0', '/dev/video1', '/dev/video2') { |c|
-      c.filename = '#{time}-'+devname+'.avi'
-      c.storage = '/tmp/' + devname
-      c.lockfile = lck_file(devname)
-    }
-  end
-
-  desc "Reset lockfiles"
-  task :reset do
-    Videoreg.release_locks!(lck_file('video0'), lck_file('video1'), lck_file('video2'))
-  end
-end
-

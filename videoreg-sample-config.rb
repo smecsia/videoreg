@@ -20,5 +20,8 @@ reg {
   store_max   3
 }
 
-run :all
+
+opt 'test' => 'aaa'
+opt :log_path => '/tmp/videoreg.log'
+opt :pid_path => '/tmp/videoreg.pid'
 

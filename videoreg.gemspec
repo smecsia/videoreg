@@ -1,6 +1,10 @@
+require 'pathname'
+
+require Pathname.new(File.dirname(File.expand_path(__FILE__))).join('lib/videoreg.rb')
+
 Gem::Specification.new do |s|
   s.name = 'videoreg'
-  s.version = '0.1'
+  s.version = Videoreg::VERSION
   s.date = '2012-06-22'
   s.authors = ["Ilya Sadykov"]
   s.email = 'i.sadykov@i-free.com'

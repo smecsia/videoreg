@@ -1,20 +1,40 @@
 #!/usr/bin/env ruby
 
 require 'rubygems'
-require 'daemons'
 require 'ostruct'
 require 'optparse'
 require 'dante'
 require_relative '../lib/videoreg'
 
+
+def colorize(text, color)
+  "\e[#{color}m#{text}\e[0m"
+end
+
+def red(text)
+  colorize(text, 31)
+end
+
+def green(text)
+  colorize(text, 32)
+end
+
+def blue(text)
+  colorize(text, 34)
+end
+
 ARGV.options do |parser|
   parser.banner = "Usage: #{File.basename($0)} [options]"
-  parser.on('-s', '--start CONFIG', 'Run video registration using specified config') { |s| opt.script = s }
+  parser.on('-c', '--config CONFIG', 'Use the specified config') { |s| opt.script = s }
   parser.on('-d', '--device DEVICE', 'Run only the specified device') { |d| opt.device = d }
-  parser.on('-P', '--pid PID', 'Sets the PID file for the capture process') { |pid| opt.pid_path = pid }
-  parser.on('-l', '--log LOGFILE', 'Sets the logfile for daemon') { |log| opt.log_path = log }
-  parser.on('-r', '--reset', 'Reset state (remove lock-files)') { opt.action = :clear }
+  parser.on('-e', '--ensure', 'Check the state of the daemon') { opt.action = :ensure }
+  parser.on('-H', '--halt DEVICE', 'Halt (suspend) the specified device') { |d| opt.action= :halt; opt.device = d }
+  parser.on('-r', '--recover DEVICE', 'Recover the device') { |d| opt.action= :recover; opt.device = d }
+  parser.on('-P', '--pid PID', 'Set the PID file for the capture process') { |pid| opt.pid_path = pid }
+  parser.on('-l', '--log LOGFILE', 'Set the logfile for daemon') { |log| opt.log_path = log }
+  parser.on('-R', '--reset', 'Reset the state (remove lock-files)') { opt.action = :reset }
   parser.on('-k', '--kill', 'Kills the capture processes') { opt.action = :kill }
+  parser.on('-v', '--version', 'Show the version') { puts "Videoreg #{Videoreg::VERSION}"; exit }
   parser.on('-h', '--help', 'Show this help message') { puts parser; exit }
   parser.parse!
 
@@ -23,11 +43,16 @@ ARGV.options do |parser|
       puts "File #{opt.script} does not exist!"
       exit
     end
+    load(opt.script)
+    res = run(opt.device, opt.action)
 
-    dante_opts = {:daemonize => opt.action == :run, :pid_path => '/tmp/videoreg.pid', :log_path => opt.log_path}
-    dante_opts = dante_opts.merge(:kill => true) if opt.action == :kill
-    dante_opts = dante_opts.merge(:pid_path => opt.pid_path) if opt.pid_path
-    Dante.run('videoreg', dante_opts) { load(opt.script) }
+    if opt.action == :ensure && res.is_a?(Array)
+      res.each do |status|
+        puts "Registrar #{blue(status[:device])} status: "
+        puts "\t Device exists?:\t [#{status[:device_exists?] ? green("YES") : red("NO")}]"
+        puts "\t Process alive?:\t [#{status[:process_alive?] ? green("YES") : red("NO")}]"
+      end
+    end
   else
     puts parser
   end

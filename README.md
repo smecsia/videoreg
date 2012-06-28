@@ -1,3 +1,51 @@
+1. Составляется конфиг-файл config.rb:
+
+	reg {
+	  device	  '/dev/video0'
+	  resolution  '640x480'
+	  fps		  25
+	  duration	  30
+	  filename	  '#{time}-video0.avi'
+	  storage	  '/tmp/video0'
+	  lockfile	  '/tmp/videoreg.video0.lock'
+	  store_max   5
+	}
+
+	reg {
+	  device      '/dev/video1'
+	  resolution  '640x480'
+	  fps         25
+	  duration    30
+	  filename    '#{time}-video1.avi'
+	  storage     '/tmp/video1'
+	  lockfile    '/tmp/videoreg.video1.lock'
+	  store_max   3
+	}
+
+	run :all
+
+1. После установки скриптов на машине запуск регистрации происходит при помощи команды videoreg:
+
+	$ videoreg -h
+	Usage: videoreg [options]
+	   -s, --start CONFIG               Run video registration using specified config
+	   -d, --device DEVICE              Run only the specified device
+	   -P, --pid PID                    Sets the PID file for the capture process
+	   -l, --log LOGFILE                Sets the logfile for daemon
+	   -r, --reset                      Reset state (remove lock-files)
+	   -k, --kill                       Kills the capture processes
+	   -h, --help                       Show this help message
+
+1. Соответственно запуск демона осуществляется следующим образом:
+
+	$ videoreg -s config.rb -l /tmp/videoreg.log
+	Daemon has started successfully
+
+1. Остановка:
+
+	$ videoreg -s config.rb -l /tmp/videoreg.log --kill
+	Stopped PID: 3870 at /tmp/videoreg.pid
+
 # Changelog
 
 ## 28.06.2012

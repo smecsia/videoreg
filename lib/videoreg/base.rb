@@ -1,5 +1,6 @@
 require 'logger'
 require 'stringio'
+require_relative 'util'
 module Videoreg
   class Base
     @@logger = ::Logger.new(STDOUT)
@@ -25,18 +26,16 @@ module Videoreg
       eval("\"#{str}\"")
     end
 
+    # Check if process is alive
+    def proc_alive?(pid)
+      Videoreg::Util.proc_alive?(pid)
+    end
+
     # Cross-platform way of finding an executable in the $PATH.
     #
     #   which('ruby') #=> /usr/bin/ruby
     def which(cmd)
-      exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
-      ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
-        exts.each { |ext|
-          exe = "#{path}/#{cmd}#{ext}"
-          return exe if File.executable? exe
-        }
-      end
-      return nil
+      Videoreg::Util.which(cmd)
     end
   end
 end
