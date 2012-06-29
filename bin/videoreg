@@ -56,12 +56,12 @@ ARGV.options do |parser|
 
         if opt.action == :ensure && res.is_a?(Array)
           puts "#{blue("DAEMON")}:\t\t [#{running_state(res[0][:daemon_running?])}]"
-          puts "Uptime: \t#{Videoreg::Util.humanize(res[0][:uptime])}" if res[0][:daemon_running?]
+          puts "Uptime:\t\t #{Videoreg::Util.humanize(res[0][:uptime])}" if res[0][:daemon_running?]
           res[1..-1].each do |status|
             proc_status = if status[:device_exists?] then
                             status[:paused?] ? red("PAUSED") : running_state(status[:process_alive?])
                           else
-                            red("DEVICE MISSING")
+                            red("NO DEVICE")
                           end
             puts "#{status[:device]}: \t [#{proc_status}]"
           end

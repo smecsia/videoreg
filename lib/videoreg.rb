@@ -42,16 +42,21 @@ module Videoreg
 
     # Listen the incoming messages from RabbitMQ
     def mq_listen(&block)
-      Thread.start {
-        logger.info "New messaging thread created for RabbitMQ #{opt.mq_host} / #{opt.mq_queue}"
-        AMQP.start(:host => opt.mq_host) do |connection|
-          q = AMQP::Channel.new(connection).queue(opt.mq_queue)
-          q.subscribe do |msg|
-            Videoreg::Base.logger.info "Received message from RabbitMQ #{msg}..."
-            block.call(connection, msg) if block_given?
+      Thread.new {
+        begin
+          logger.info "New messaging thread created for RabbitMQ #{opt.mq_host} / #{opt.mq_queue}"
+          AMQP.start(:host => opt.mq_host) do |connection|
+            q = AMQP::Channel.new(connection).queue(opt.mq_queue)
+            q.subscribe do |msg|
+              Videoreg::Base.logger.info "Received message from RabbitMQ #{msg}..."
+              block.call(connection, msg) if block_given?
+            end
+            Signal.add_trap("TERM") { q.delete; mq_disconnect(connection) }
+            Signal.add_trap(0) { q.delete; mq_disconnect(connection) }
           end
-          Signal.add_trap("TERM") { q.delete; mq_disconnect(connection) }
-          Signal.add_trap(0) { q.delete; mq_disconnect(connection) }
+        rescue => e
+          logger.error "Error during establishing the connection to RabbitMQ: #{e.message}"
+          @dante_runner.stop if @dante_runner
         end
       }
     end
@@ -192,6 +197,8 @@ module Videoreg
           @registrars.each { |reg|
             reg.force_release_lock!
           }
+          logger.info "Forced to release pidfile #{opt.pid_path}"
+          File.unlink(opt.pid_path) if File.exists?(opt.pid_path)
         else
           raise "Unsupported action #{action} provided to runner!"
       end
