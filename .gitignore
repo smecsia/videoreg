@@ -3,6 +3,7 @@
 coverage
 .bundle
 tmp
+old
 chromedriver.log
 atlassian-ide-plugin.xml
 *.gem

@@ -1,33 +1,37 @@
 1. Составляется конфиг-файл config.rb:
 
-	reg {
-	  device	  '/dev/video0'
-	  resolution  '640x480'
-	  fps		  25
-	  duration	  30
-	  filename	  '#{time}-video0.avi'
-	  storage	  '/tmp/video0'
-	  lockfile	  '/tmp/videoreg.video0.lock'
-	  store_max   5
-	}
+    reg {
+      device      '/dev/video0'
+      resolution  '640x480'
+      fps         25
+      duration    60
+      filename    '#{time}-video0.avi'
+      storage     '/tmp/video0'
+      lockfile    '/tmp/videoreg.video0.lock'
+      store_max   5
+    }
 
-	reg {
-	  device      '/dev/video1'
-	  resolution  '640x480'
-	  fps         25
-	  duration    30
-	  filename    '#{time}-video1.avi'
-	  storage     '/tmp/video1'
-	  lockfile    '/tmp/videoreg.video1.lock'
-	  store_max   3
-	}
+    reg {
+      device      '/dev/video1'
+      resolution  '640x480'
+      fps         25
+      duration    60
+      filename    '#{time}-video1.avi'
+      storage     '/tmp/video1'
+      lockfile    '/tmp/videoreg.video1.lock'
+      store_max   3
+    }
 
-	run :all
+
+    log_path    '/tmp/videoreg.log'
+    pid_path    '/tmp/videoreg.pid'
+    mq_queue    'com.ifree.videoreg.daemon'
+    mq_host     'localhost'
 
 1. После установки скриптов на машине запуск регистрации происходит при помощи команды videoreg:
 
 	$ videoreg -h
-    Usage: videoreg [options]
+	Usage: videoreg [options]
         -c, --config CONFIG              Use the specified config
         -d, --device DEVICE              Run only the specified device
         -e, --ensure                     Check the state of the daemon
@@ -52,6 +56,11 @@
 
 # Changelog
 
+## 29.06.2012
+### Current status
+* Проверка наличия всех девайсов (камер)
+* По команде прервать запись с определенной камеры и начать заново (это нужно чтобы вытащить кадр из текущего кусочка записи)
+
 ## 28.06.2012
 ### Current status
 * Запуск видеозаписи
@@ -60,8 +69,7 @@
     * Слежение
 
 ### TODO
-* Проверка наличия всех девайсов (камер)
-* По команде прервать запись с определенной камеры и начать заново (это нужно чтобы вытащить кадр из текущего кусочка записи)
+* "Ленивая" инициализация заданной камеры: пауза/запуск процесса записи
 * Состояние системы (свободное место на винте, время работы с момента последней перезагрузки и тп) – тоже в конфиге как-то хранить
 * Слежение за свободным местом на диске (например записи с камер 1 и 2 должны хранится 12 часов, но все вместе не более 15Гб)
 * Алерты об ошибках в Приложение1

@@ -13,6 +13,7 @@ module Videoreg
       @config = Videoreg::Config.new
       @pid = nil
       @halted_mutex = nil
+      @terminated = false
       configure(&block) if block_given?
     end
 
@@ -27,6 +28,7 @@ module Videoreg
 
     def continuous
       logger.info "Starting the continuous capture..."
+      @terminated = false
       @thread = Thread.new do
         while true do
           unless @halted_mutex.nil?
@@ -35,7 +37,7 @@ module Videoreg
           end
           unless device_exists?
             logger.error "Capture failed! Device #{device} does not exist!"
-            Thread.exit
+            terminate!
           end
           begin
             logger.info "Cleaning old files from storage (#{storage})... (MAX: #{config.store_max})"
@@ -46,7 +48,7 @@ module Videoreg
           rescue RuntimeError => e
             logger.error(e.message)
             logger.info "Registrar (#{device}) has failed to capture the part (#{outfile})..."
-            Thread.exit
+            terminate!
           end
         end
       end
@@ -65,6 +67,10 @@ module Videoreg
       end
     ensure
       release
+    end
+
+    def pid
+      @pid || ((rpid = lockfile.lockcode) ? rpid.to_i : nil)
     end
 
     def clean_old_files!
@@ -86,18 +92,28 @@ module Videoreg
       kill_process!
     end
 
+    def pause!
+      logger.info "Registrar #{device} pausing process with pid #{pid}..."
+      Process.kill("STOP", pid) if process_alive?
+    end
+
     def recover!
       logger.info "Registrar #{device} UNHALTED! Recovering process..."
       @halted_mutex.unlock if @halted_mutex && @halted_mutex.locked?
       @halted_mutex = nil
     end
 
+    def resume!
+      logger.info "Registrar #{device} resuming process with pid #{pid}..."
+      Process.kill("CONT", pid) if process_alive?
+    end
+
     # Kill just the underlying process
     def kill_process!
-      pid = lockfile.lockcode
       begin
         logger.info("Killing the process for #{device} : #{pid}")
-        Process.kill("KILL", pid.to_i) if !pid.empty? && process_alive?
+        Process.kill("KILL", pid) if process_alive?
+        Process.getpgid
       rescue => e
         logger.warn("An attempt to kill already killed process (#{pid}): #{e.message}")
       end
@@ -105,13 +121,22 @@ module Videoreg
 
     # Kill completely
     def kill!
-      @thread.kill if @thread
+      terminate!
       kill_process! if process_alive?
-      release
+    ensure
+      safe_release!
+    end
+
+    # Terminate the main thread
+    def terminate!
+      @terminated = true
+      @thread.kill if @thread
+    ensure
+      safe_release!
     end
 
     def safe_release!
-      release if self_alive?
+      release if File.exists?(config.lockfile)
     end
 
     def force_release_lock!
@@ -128,8 +153,15 @@ module Videoreg
     end
 
     def process_alive?
-      pid = lockfile.lockcode
-      !pid.empty? && proc_alive?(pid.to_i)
+      !pid.to_s.empty? && pid.to_i != 0 && proc_alive?(pid)
+    end
+
+    def terminated?
+      @terminated
+    end
+
+    def paused?
+      process_alive? && (`ps -p #{pid} -o stat=`.chomp == "T")
     end
 
     #################################

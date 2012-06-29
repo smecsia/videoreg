@@ -12,14 +12,18 @@ module Videoreg
 
   VERSION = "0.1"
   DAEMON_NAME = "videoreg"
-  MAX_THREAD_WAIT_LIMIT_SEC = 30
+  MAX_THREAD_WAIT_LIMIT_SEC = 600
 
   ALLOWED_CONFIG_OPTIONS = %w[mq_host mq_queue pid_path log_path device]
 
   MSG_HALT = 'HALT'
   MSG_RECOVER = 'RECOVER'
+  MSG_PAUSE = 'PAUSE'
+  MSG_RESUME = 'RESUME'
+  MSG2ACTION = {MSG_HALT => :halt!, MSG_PAUSE => :pause!, MSG_RESUME => :resume!, MSG_RECOVER => :recover!}
 
   @registered_regs = {}
+  @time_started = Time.now
   @run_options = OpenStruct.new(
       :device => :all,
       :action => :run,
@@ -46,8 +50,8 @@ module Videoreg
             Videoreg::Base.logger.info "Received message from RabbitMQ #{msg}..."
             block.call(connection, msg) if block_given?
           end
-          Signal.add_trap("TERM") { q.delete; mq_disconnect(connection)  }
-          Signal.add_trap(0) { q.delete; mq_disconnect(connection)  }
+          Signal.add_trap("TERM") { q.delete; mq_disconnect(connection) }
+          Signal.add_trap(0) { q.delete; mq_disconnect(connection) }
         end
       }
     end
@@ -95,11 +99,11 @@ module Videoreg
 
     # Shortcut to create new registrar's configuration
     def reg(&block)
-      Signal.add_trap(0) { reg.safe_release! }
-      reg = Registrar.new
-      reg.logger = opt.logger if opt.logger
-      reg.config.instance_eval(&block)
-      registrars[reg.config.device] = reg
+      r = Registrar.new
+      Signal.add_trap(0) { r.safe_release! }
+      r.logger = opt.logger if opt.logger
+      r.config.instance_eval(&block)
+      registrars[r.config.device] = r
     end
 
     # Calculate current registrars list
@@ -118,21 +122,17 @@ module Videoreg
     # Run daemon
     def run_daemon(regs)
       Signal.add_trap("TERM") { File.unlink(opt.pid_path) if File.exists?(opt.pid_path) }
+      @time_started = Time.now
       # Run message thread
       mq_listen do |connection, message|
         begin
-          message = JSON.parse(message)
-          raise "Unexpected message struct received: #{message}!" unless message.is_a?(Hash)
+          raise "Unexpected message struct received: #{message}!" unless (message = JSON.parse(message)).is_a?(Hash)
           opt.device = message["arg"] if message["arg"]
-          case (message["msg"])
-            when MSG_HALT then
-              logger.info "HALT MESSAGE RECEIVED!"
-              calc_reg_list(opt.device).each { |reg| reg.halt! }
-            when MSG_RECOVER then
-              logger.info "RECOVER MESSAGE RECEIVED!"
-              calc_reg_list(opt.device).each { |reg| reg.recover! }
-            else
-              logger.info "UNKNOWN MESSAGE RECEIVED!"
+          if (action = MSG2ACTION[message["msg"]])
+            logger.info "#{message["msg"]} MESSAGE RECEIVED!"
+            calc_reg_list(opt.device).each { |reg| reg.send(action) }
+          else
+            logger.error "UNKNOWN MESSAGE RECEIVED!"
           end
         rescue => e
           logger.error "Exception during incoming message processing: #{e.message}: \n#{e.backtrace.join("\n")}"
@@ -141,12 +141,15 @@ module Videoreg
       # Run main thread
       regs.map { |reg|
         logger.info "Starting continuous registration from device #{reg.device}..."
-        reg.continuous
-      }.each { |t|
-        while true do
-          t.join(MAX_THREAD_WAIT_LIMIT_SEC)
-        end
+        {:reg => reg, :thread => reg.continuous}
+      }.each { |reg_hash|
+        while true do # avoid deadlock exception
+          reg_hash[:thread].join(MAX_THREAD_WAIT_LIMIT_SEC)
+          break if reg_hash[:reg].terminated? # break if thread was terminated
+        end if reg_hash[:reg] && reg_hash[:thread]
       }
+      @time_ended = Time.now
+      logger.info "Daemon finished execution. Uptime #{@time_ended - @time_started} sec"
     end
 
     # Shortcut to run action on registrar(s)
@@ -162,11 +165,21 @@ module Videoreg
       case action
         when :kill then
           @dante_runner.stop
+        when :pause then
+          mq_send(MSG_PAUSE, device) if @dante_runner.daemon_running?
+        when :resume then
+          mq_send(MSG_RESUME, device) if @dante_runner.daemon_running?
         when :recover then
           mq_send(MSG_RECOVER, device) if @dante_runner.daemon_running?
         when :ensure then
-          [{:daemon_running? => @dante_runner.daemon_running?}] + @registrars.map { |reg|
-            {:device => reg.device, :device_exists? => reg.device_exists?, :process_alive? => reg.process_alive?}
+          uptime = (@dante_runner.daemon_running?) ? Time.now - File.stat(opt.pid_path).ctime : 0
+          [{:daemon_running? => @dante_runner.daemon_running?, :uptime => uptime}] + @registrars.map { |reg|
+            {
+                :device => reg.device,
+                :device_exists? => reg.device_exists?,
+                :process_alive? => reg.process_alive?,
+                :paused? => reg.paused?
+            }
           }
         when :halt then
           mq_send(MSG_HALT, device) if @dante_runner.daemon_running?

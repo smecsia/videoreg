@@ -39,6 +39,17 @@ module Videoreg
         end.flatten!.first
       end
 
+
+      def humanize(secs)
+        [[60, :sec], [60, :min], [24, :hr], [1000, :days]].map{ |count, name|
+          if secs > 0
+            secs, n = secs.divmod(count)
+            "#{n.to_i}#{name}"
+          end
+        }.compact.reverse.join(' ')
+      end
+
+
     end
 
   end

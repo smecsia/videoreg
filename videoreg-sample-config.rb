@@ -20,6 +20,17 @@ reg {
   store_max   3
 }
 
+reg {
+  device      '/dev/video2'
+  resolution  '640x480'
+  fps         25
+  duration    60
+  filename    '#{time}-video2.avi'
+  storage     '/tmp/video2'
+  lockfile    '/tmp/videoreg.video2.lock'
+  store_max   3
+}
+
 
 log_path    '/tmp/videoreg.log'
 pid_path    '/tmp/videoreg.pid'
