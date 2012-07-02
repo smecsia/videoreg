@@ -14,6 +14,7 @@ apt-get install mencoder ffmpeg qc-usb-utils v4l-utils rabbitmq-server ruby1.9.1
 ln -sf /usr/bin/ruby1.9.1 /usr/bin/ruby
 ln -sf /usr/bin/rake1.9.1 /usr/bin/rake
 ln -sf /usr/bin/gem1.9.1 /usr/bin/gem
+ln -sf /usr/bin/irb1.9.1 /usr/bin/irb
 export GEM_BIN=/var/lib/gems/1.9.1/bin
 export PATH=$PATH:$GEM_BIN
 cd $CURDIR

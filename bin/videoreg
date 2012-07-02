@@ -55,12 +55,12 @@ ARGV.options do |parser|
         puts "Add these rules to #{green('/etc/udev/rules.d/50-udev-videoreg.rules')} file:"
         Videoreg::Util.udevinfo(MAX_DEVICES_COUNT).each_with_index do |info,index|
           puts <<-RULE
-            BUS=="usb" ACTION=="add" DEVPATH=="#{info[:prefix]}#{info[:usb]}#{info[:postfix]}video*" SYMLINK+="webcam#{index}" GROUP="video"
+            BUS=="usb" ACTION=="add" DEVPATH=="#{info[:prefix]}#{info[:usbhub]}/#{info[:usbport]}#{info[:postfix]}video*" SYMLINK+="webcam#{index}" GROUP="video"
           RULE
         end
       when opt.action == :devinfo then
         Videoreg::Util.udevinfo(MAX_DEVICES_COUNT).each do |info|
-          puts "#{green(info[:usb])} --> #{blue(info[:dev])}"
+          puts "#{green(info[:usbhub])}[#{blue(info[:usbport])}] --> #{blue(info[:device])}"
         end
       when opt.script then
         unless File.exists?(opt.script)
