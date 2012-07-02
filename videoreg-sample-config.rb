@@ -3,9 +3,9 @@ reg {
   resolution  '640x480'
   fps         25
   duration    60
-  filename    '#{time}-video0.avi'
-  storage     '/tmp/video0'
-  lockfile    '/tmp/videoreg.video0.lock'
+  filename    '#{time}-webcam0.avi'
+  storage     '/tmp/webcam0'
+  lockfile    '/tmp/videoreg.webcam0.lock'
   store_max   5
 }
 
@@ -14,20 +14,20 @@ reg {
   resolution  '640x480'
   fps         25
   duration    60
-  filename    '#{time}-video1.avi'
-  storage     '/tmp/video1'
-  lockfile    '/tmp/videoreg.video1.lock'
+  filename    '#{time}-webcam1.avi'
+  storage     '/tmp/webcam1'
+  lockfile    '/tmp/videoreg.webcam1.lock'
   store_max   3
 }
 
 reg {
-  device      '/dev/video2'
+  device      '/dev/webcam2'
   resolution  '640x480'
   fps         25
   duration    60
-  filename    '#{time}-video2.avi'
-  storage     '/tmp/video2'
-  lockfile    '/tmp/videoreg.video2.lock'
+  filename    '#{time}-webcam2.avi'
+  storage     '/tmp/webcam2'
+  lockfile    '/tmp/videoreg.webcam2.lock'
   store_max   3
 }
 
