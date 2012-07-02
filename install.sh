@@ -26,8 +26,7 @@ fi
 if [ -f $BUNDLER ];
 then
     $BUNDLER install
-    gem build videoreg.gemspec
-    gem install videoreg-0.1.gem
+    $BUNDLER exec gem install videoreg-0.1.gem
 else
     echo "Bundler executable not found ($BUNDLER)! Installation FAILED!"
 fi
