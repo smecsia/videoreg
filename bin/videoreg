@@ -52,6 +52,7 @@ ARGV.options do |parser|
 
     case
       when opt.action == :udev then
+        puts "Add these rules to #{green('/etc/udev/rules.d/50-udev-videoreg.rules')} file:"
         Videoreg::Util.udevinfo(MAX_DEVICES_COUNT).each_with_index do |info,index|
           puts <<-RULE
             BUS=="usb" ACTION=="add" DEVPATH=="#{info[:prefix]}#{info[:usb]}/*/video4linux/video*" SYMLINK+="webcam#{index}" GROUP="video"
