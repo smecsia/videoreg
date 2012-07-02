@@ -1,6 +1,8 @@
 require 'open4'
 require 'pathname'
 
+require_relative "base"
+
 module Videoreg
   class Registrar < Videoreg::Base
     DELEGATE_TO_CONFIG = [:command, :outfile, :resolution, :fps, :duration, :device, :storage, :base_cmd, :store_max]
