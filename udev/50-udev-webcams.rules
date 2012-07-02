@@ -1,0 +1,2 @@
+BUS=="usb" ACTION=="add" DEVPATH=="/devices/pci0000:00/0000:00:1c.3/0000:05:00.0/usb3/*/video4linux/video*" SYMLINK+="webcam1" GROUP="video"
+BUS=="usb" ACTION=="add" DEVPATH=="/devices/pci0000:00/0000:00:1a.0/usb1/*/video4linux/video*" SYMLINK+="webcam0" GROUP="video"

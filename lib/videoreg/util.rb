@@ -41,7 +41,7 @@ module Videoreg
 
 
       def humanize(secs)
-        [[60, :sec], [60, :min], [24, :hr], [1000, :days]].map{ |count, name|
+        [[60, :sec], [60, :min], [24, :hr], [1000, :days]].map { |count, name|
           if secs > 0
             secs, n = secs.divmod(count)
             "#{n.to_i}#{name}"
@@ -49,6 +49,28 @@ module Videoreg
         }.compact.reverse.join(' ')
       end
 
+
+      def udevinfo(maxcount)
+        res = []
+        maxcount.times do |dnum|
+          devpath_parts = nil
+          Open4::popen4("udevadm info --query all --name video#{dnum} | grep DEVPATH") do |pid, stdin, stdout, stderr|
+            devpath = stdout.read.match(/DEVPATH=(.*)\n$/)
+            unless devpath.nil?
+              devpath_parts = devpath[1].match(/(\/.*\/)(usb\d+)(\/.*\/video4linux\/)(video\d+)/)
+            end
+          end
+          unless devpath_parts.nil?
+            res << {
+                :prefix => devpath_parts[1],
+                :usb => devpath_parts[2],
+                :postfix => devpath_parts[3],
+                :dev => "/dev/#{devpath_parts[4]}"
+            }
+          end
+        end
+        res
+      end
 
     end
 

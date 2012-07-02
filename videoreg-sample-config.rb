@@ -1,5 +1,5 @@
 reg {
-  device      '/dev/video0'
+  device      '/dev/webcam0'
   resolution  '640x480'
   fps         25
   duration    60
@@ -10,7 +10,7 @@ reg {
 }
 
 reg {
-  device      '/dev/video1'
+  device      '/dev/webcam1'
   resolution  '640x480'
   fps         25
   duration    60

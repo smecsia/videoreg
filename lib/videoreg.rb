@@ -34,6 +34,11 @@ module Videoreg
   )
 
   class << self
+    # Version info
+    def version_info
+      "#{DAEMON_NAME} v.#{VERSION}"
+    end
+
     # Disconnect from RabbitMQ
     def mq_disconnect(connection)
       logger.info "Disconnecting from RabbitMQ..."

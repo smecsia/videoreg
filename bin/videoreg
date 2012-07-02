@@ -27,6 +27,9 @@ def running_state(is_running)
   is_running ? green("RUNNING") : red("NOT RUNNING")
 end
 
+
+MAX_DEVICES_COUNT = 10
+
 ARGV.options do |parser|
   Videoreg.class_eval {
     parser.banner = "Usage: #{File.basename($0)} [options]"
@@ -41,36 +44,51 @@ ARGV.options do |parser|
     parser.on('-e', '--ensure', 'Check the state of the daemon') { opt.action = :ensure }
     parser.on('-C', '--clear', 'Clear the state (remove lock-files)') { opt.action = :reset }
     parser.on('-k', '--kill', 'Kills the capture processes') { opt.action = :kill }
-    parser.on('-v', '--version', 'Show the version') { puts "Videoreg #{Videoreg::VERSION}"; exit }
+    parser.on('-v', '--version', 'Show the version') { puts "#{Videoreg.version_info}"; exit }
+    parser.on('-I', '--info', 'Show info about plugged devices') { opt.action = :devinfo }
+    parser.on('-U', '--udev', 'Generate udev rules for current config') { opt.action = :udev }
     parser.on('-h', '--help', 'Show this help message') { puts parser; exit }
     parser.parse!
 
-    if opt.script
-      unless File.exists?(opt.script)
-        puts "File #{opt.script} does not exist!"
-        exit
-      end
-      begin
-        eval(File.open(File.expand_path(opt.script)).read)
-        res = run(opt.device, opt.action)
-
-        if opt.action == :ensure && res.is_a?(Array)
-          puts "#{blue("DAEMON")}:\t\t [#{running_state(res[0][:daemon_running?])}]"
-          puts "Uptime:\t\t #{Videoreg::Util.humanize(res[0][:uptime])}" if res[0][:daemon_running?]
-          res[1..-1].each do |status|
-            proc_status = if status[:device_exists?] then
-                            status[:paused?] ? red("PAUSED") : running_state(status[:process_alive?])
-                          else
-                            red("NO DEVICE")
-                          end
-            puts "#{status[:device]}: \t [#{proc_status}]"
-          end
+    case
+      when opt.action == :udev then
+        Videoreg::Util.udevinfo(MAX_DEVICES_COUNT).each_with_index do |info,index|
+          puts <<-RULE
+            BUS=="usb" ACTION=="add" DEVPATH=="#{info[:prefix]}#{info[:usb]}/*/video4linux/video*" SYMLINK+="webcam#{index}" GROUP="video"
+          RULE
         end
-      rescue => e
-        puts "An error has occured during config processing: #{e.message} \n #{e.backtrace.join("\n")}"
-      end
-    else
-      puts parser
+      when opt.action == :devinfo then
+        Videoreg::Util.udevinfo(MAX_DEVICES_COUNT).each do |info|
+          puts "#{green(info[:usb])} --> #{blue(info[:dev])}"
+        end
+      when opt.script then
+        unless File.exists?(opt.script)
+          puts "File #{opt.script} does not exist!"
+          exit
+        end
+        begin
+          eval(File.open(File.expand_path(opt.script)).read)
+          res = run(opt.device, opt.action)
+
+          case opt.action
+            when :ensure
+              puts "#{blue("DAEMON")}:\t\t [#{running_state(res[0][:daemon_running?])}]"
+              puts "Uptime:\t\t #{Videoreg::Util.humanize(res[0][:uptime])}" if res[0][:daemon_running?]
+              res[1..-1].each do |status|
+                proc_status = if status[:device_exists?] then
+                                status[:paused?] ? red("PAUSED") : running_state(status[:process_alive?])
+                              else
+                                red("NO DEVICE")
+                              end
+                puts "#{status[:device]}: \t [#{proc_status}]"
+              end
+            else
+          end
+        rescue => e
+          puts "An error has occured during config processing: #{e.message} \n #{e.backtrace.join("\n")}"
+        end
+      else
+        puts parser
     end
   }
 end
