@@ -20,7 +20,7 @@ else
     export BUNDLER=/var/lib/gems/1.9.1/bin/bundle
 fi
 
-if [ ! -f $BUNDLER ];
+if [ -f $BUNDLER ];
 then
     $BUNDLER install
     gem build videoreg.gemspec
