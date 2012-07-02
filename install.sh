@@ -12,10 +12,17 @@ else
 fi
 apt-get install mencoder ffmpeg qc-usb-utils v4l-utils rabbitmq-server ruby1.9.1 rubygems
 cd $CURDIR
+gem install bundler
 if [ -f /var/lib/gems/1.8/bin/bundle ]
 then
-    gem install bundler
-    bundle install
+    export BUNDLER=/var/lib/gems/1.8/bin/bundle
+else
+    export BUNDLER=/var/lib/gems/1.9.1/bin/bundle
+fi
+
+if [ ! -f $BUNDLER ];
+then
+    $BUNDLER install
     gem build videoreg.gemspec
     gem install videoreg-0.1.gem
 else
