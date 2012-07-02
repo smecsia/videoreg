@@ -10,17 +10,17 @@ else
     apt-key add rabbitmq-signing-key-public.asc
     apt-get update
 fi
-apt-get install mencoder ffmpeg qc-usb-utils v4l-utils rabbitmq-server ruby1.9.1 rubygems
+apt-get install mencoder ffmpeg qc-usb-utils v4l-utils rabbitmq-server ruby1.9.1 rubygems ruby1.9.1-dev
 ln -sf /usr/bin/ruby1.9.1 /usr/bin/ruby
 ln -sf /usr/bin/rake1.9.1 /usr/bin/rake
 ln -sf /usr/bin/gem1.9.1 /usr/bin/gem
 cd $CURDIR
 gem install bundler --no-rdoc --no-ri
-if [ -f /var/lib/gems/1.8/bin/bundle ];
+if [ -f /var/lib/gems/1.9.1/bin/bundle ];
 then
-    export BUNDLER=/var/lib/gems/1.8/bin/bundle
-else
     export BUNDLER=/var/lib/gems/1.9.1/bin/bundle
+else
+    export BUNDLER=/var/lib/gems/1.8/bin/bundle
 fi
 
 if [ -f $BUNDLER ];
