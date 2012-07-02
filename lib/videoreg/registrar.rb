@@ -170,9 +170,7 @@ module Videoreg
     private # Private methods:
 
     def error?(output)
-      if output =~ /No such file or directory/
-        output.split("\n").last
-      elsif output =~ /Input\/output error/
+      if output =~ /No such file or directory/ || output =~ /I\/O error occurred/ || output =~ /Input\/output error/
         output.split("\n").last
       else
         nil
