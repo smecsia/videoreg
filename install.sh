@@ -27,6 +27,10 @@ if [ -f $BUNDLER ];
 then
     $BUNDLER install
     $BUNDLER exec gem install videoreg-0.1.gem
+
+    echo "Information about plugged devices:"
+    /var/lib/gems/1.9.1/bin/videoreg -I
+    /var/lib/gems/1.9.1/bin/videoreg -U
 else
     echo "Bundler executable not found ($BUNDLER)! Installation FAILED!"
 fi
