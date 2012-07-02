@@ -12,7 +12,12 @@ else
 fi
 apt-get install mencoder ffmpeg qc-usb-utils v4l-utils rabbitmq-server ruby1.9.1 rubygems
 cd $CURDIR
-gem install bundler
-bundle install
-gem build videoreg.gemspec
-gem install videoreg-0.1.gem
+if [ -f /var/lib/gems/1.8/bin/bundle ]
+then
+    gem install bundler
+    bundle install
+    gem build videoreg.gemspec
+    gem install videoreg-0.1.gem
+else
+    echo "Bundler executable not found! Installation FAILED!"
+fi
