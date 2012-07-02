@@ -14,11 +14,13 @@ apt-get install mencoder ffmpeg qc-usb-utils v4l-utils rabbitmq-server ruby1.9.1
 ln -sf /usr/bin/ruby1.9.1 /usr/bin/ruby
 ln -sf /usr/bin/rake1.9.1 /usr/bin/rake
 ln -sf /usr/bin/gem1.9.1 /usr/bin/gem
+export GEM_BIN=/var/lib/gems/1.9.1/bin
+export PATH=$PATH:$GEM_BIN
 cd $CURDIR
 gem install bundler --no-rdoc --no-ri
-if [ -f /var/lib/gems/1.9.1/bin/bundle ];
+if [ -f $GEM_BIN/bundle ];
 then
-    export BUNDLER=/var/lib/gems/1.9.1/bin/bundle
+    export BUNDLER=$GEM_BIN/bundle
 else
     export BUNDLER=/var/lib/gems/1.8/bin/bundle
 fi
@@ -29,8 +31,8 @@ then
     $BUNDLER exec gem install videoreg-0.1.gem
 
     echo "Information about plugged devices:"
-    /var/lib/gems/1.9.1/bin/videoreg -I
-    /var/lib/gems/1.9.1/bin/videoreg -U
+    videoreg -I
+    videoreg -U
 else
     echo "Bundler executable not found ($BUNDLER)! Installation FAILED!"
 fi
