@@ -75,13 +75,13 @@
 ### Запуск демона:
 
 ```
-	$ videoreg -s config.rb
+	$ videoreg -c config.rb
 	Daemon has started successfully
 ```
 ### Остановка:
 
 ```
-	$ videoreg -s config.rb --k
+	$ videoreg -c config.rb --k
 	Stopped PID: 3870 at /tmp/videoreg.pid
 ```
 ### Остановить конкретный регистратор (для определённого устройства):
