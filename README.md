@@ -62,6 +62,7 @@
 	    -I, --info                       Show info about plugged devices
 ```
 1. Информация о текущем статусе демона:
+
 ```
 	$  videoreg -c config.rb -e
 	Running command 'ensure' for device(s): 'all'...
@@ -72,16 +73,19 @@
 	/dev/webcam2: 	 [NO DEVICE]
 ```
 1. Запуск демона:
+
 ```
 	$ videoreg -s config.rb
 	Daemon has started successfully
 ```
 1. Остановка:
+
 ```
 	$ videoreg -s config.rb --k
 	Stopped PID: 3870 at /tmp/videoreg.pid
 ```
 1. Остановить конкретный регистратор (для определённого устройства):
+
 ```
 	$ videoreg -c config.rb -H /dev/webcam0
 	Running command 'halt' for device(s): '/dev/webcam0'...
@@ -97,6 +101,7 @@
 	/dev/webcam2: 	 [NO DEVICE]
 ```
 1. Запустить конкретный регистратор:
+
 ```
 	$ videoreg -c config.rb -r /dev/webcam0
 	Running command 'recover' for device(s): '/dev/webcam0'...
@@ -112,6 +117,7 @@
 	/dev/webcam2: 	 [NO DEVICE]
 ```
 1. Приостановить регистратор:
+
 ```
 	$ videoreg -c config.rb -P /dev/webcam0
 	Running command 'pause' for device(s): '/dev/webcam0'...
@@ -127,6 +133,7 @@
 	/dev/webcam2: 	 [NO DEVICE]
 ```
 1. Возобновить регистратор:
+
 ```
 	$ videoreg -c config.rb -R /dev/webcam0
 	Running command 'resume' for device(s): '/dev/webcam0'...
@@ -142,12 +149,14 @@
 	/dev/webcam2: 	 [NO DEVICE]
 ```
 1. Получить информацию о подключённых камерах:
+
 ```
 	$ videoreg -I
 	usb1[1-1] --> /dev/webcam0
 	usb2[2-1] --> /dev/webcam1
 ```
 1. Сгенерировать файл с правилами udev:
+
 ```
 	$ videoreg -U
 	Writing the rules to /etc/udev/rules.d/50-udev-videoreg.rules file:
