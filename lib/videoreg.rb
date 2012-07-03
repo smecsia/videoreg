@@ -10,12 +10,15 @@ require_relative './videoreg/util'
 # Main videoreg module
 module Videoreg
 
+  # configurable constants
   VERSION = "0.1"
   DAEMON_NAME = "videoreg"
-  MAX_THREAD_WAIT_LIMIT_SEC = 600
+  MAX_THREAD_WAIT_LIMIT_SEC = 600 # time while daemon waits until capture thread exists
+  UDEV_RULES_FILE = '/etc/udev/rules.d/50-udev-videoreg.rules'
+  DEV_SYMLINK = "webcam" # name of the devices symlinks
 
+  # internal constants
   ALLOWED_CONFIG_OPTIONS = %w[mq_host mq_queue pid_path log_path device]
-
   MSG_HALT = 'HALT'
   MSG_RECOVER = 'RECOVER'
   MSG_PAUSE = 'PAUSE'

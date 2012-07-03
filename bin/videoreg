@@ -46,19 +46,28 @@ ARGV.options do |parser|
     parser.on('-k', '--kill', 'Kills the capture processes') { opt.action = :kill }
     parser.on('-v', '--version', 'Show the version') { puts "#{Videoreg.version_info}"; exit }
     parser.on('-h', '--help', 'Show this help message') { puts parser; exit }
-    parser.on('-I', '--info', 'Show info about plugged devices') {
-      opt.action = :info
-      puts "Add these rules to #{green('/etc/udev/rules.d/50-udev-videoreg.rules')} file:"
-      Videoreg::Util.udevinfo(MAX_DEVICES_COUNT).each_with_index do |info, index|
-        puts <<-RULE
-            BUS=="usb" ACTION=="add" DEVPATH=="#{info[:prefix]}#{info[:usbhub]}/#{info[:usbport]}#{info[:postfix]}video*" SYMLINK+="webcam#{index}" GROUP="video"
-        RULE
-      end
-    }
     parser.on('-U', '--udev', 'Generate udev rules for current config') {
       opt.action = :info
-      Videoreg::Util.udevinfo(MAX_DEVICES_COUNT).each do |info|
-        puts "#{green(info[:usbhub])}[#{blue(info[:usbport])}] --> #{blue(info[:device])}"
+      config = Videoreg::Util.udevinfo(MAX_DEVICES_COUNT).each_with_index.map do |info, index|
+        <<-RULE
+            BUS=="usb" ACTION=="add" DEVPATH=="#{info[:prefix]}#{info[:usbhub]}/#{info[:usbport]}/*/video4linux/video*" SYMLINK+="#{Videoreg::DEV_SYMLINK}#{index}" GROUP="video"
+        RULE
+      end.join
+      puts "Writing the rules to #{green(Videoreg::UDEV_RULES_FILE)} file:"
+      puts config
+      begin
+        File.open(Videoreg::UDEV_RULES_FILE, "w+") do |f|
+          f.puts(config)
+        end
+        puts green("File has been written successfully! Now restart udev (/etc/init.d/udev restart) and replug the webcams!")
+      rescue => e
+        puts red("Failed to write file: #{e.message}. Please do this manually!")
+      end
+    }
+    parser.on('-I', '--info', 'Show info about plugged devices') {
+      opt.action = :info
+      Videoreg::Util.udevinfo(MAX_DEVICES_COUNT).each_with_index do |info|
+        puts "#{green(info[:usbhub])}[#{blue(info[:usbport])}] --> #{blue("/dev/#{Videoreg::DEV_SYMLINK}#{info[:devnum]}")}"
       end
     }
     parser.parse!

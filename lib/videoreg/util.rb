@@ -57,7 +57,7 @@ module Videoreg
           Open4::popen4("udevadm info --query all --name video#{dnum} | grep DEVPATH") do |pid, stdin, stdout, stderr|
             devpath = stdout.read.match(/DEVPATH=(.*)\n$/)
             unless devpath.nil?
-              devpath_parts = devpath[1].match(/(\/.*\/)(usb\d+)\/(\d*-\d*)((?:\/.*)?\/video4linux\/)(video\d+)/)
+              devpath_parts = devpath[1].match(/(\/.*\/)(usb\d+)\/(\d*-\d*)((?:\/.*)?\/video4linux\/)(video(\d+))/)
             end
           end
           unless devpath_parts.nil?
@@ -66,7 +66,8 @@ module Videoreg
                 :usbhub => devpath_parts[2],
                 :usbport => devpath_parts[3],
                 :postfix => devpath_parts[4],
-                :device => "/dev/#{devpath_parts[5]}"
+                :device => "/dev/#{devpath_parts[5]}",
+                :devnum => devpath_parts[6]
             }
           end
         end
