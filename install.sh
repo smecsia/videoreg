@@ -29,8 +29,7 @@ fi
 if [ -f $BUNDLER ];
 then
     $BUNDLER install
-    $BUNDLER exec gem build videoreg.gemspec
-    $BUNDLER exec gem install videoreg-0.1.gem
+    $BUNDLER exec gem install dist/videoreg-0.1.gem
 
     echo "Information about plugged devices:"
     videoreg -I
