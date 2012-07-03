@@ -10,7 +10,7 @@ else
     apt-key add rabbitmq-signing-key-public.asc
     apt-get update
 fi
-apt-get install mencoder ffmpeg qc-usb-utils v4l-utils rabbitmq-server ruby1.9.1 rubygems ruby1.9.1-dev
+apt-get install -y mencoder ffmpeg qc-usb-utils v4l-utils rabbitmq-server ruby1.9.1 rubygems ruby1.9.1-dev
 ln -sf /usr/bin/ruby1.9.1 /usr/bin/ruby
 ln -sf /usr/bin/rake1.9.1 /usr/bin/rake
 ln -sf /usr/bin/gem1.9.1 /usr/bin/gem
@@ -29,6 +29,7 @@ fi
 if [ -f $BUNDLER ];
 then
     $BUNDLER install
+    $BUNDLER exec gem build videoreg.gemspec
     $BUNDLER exec gem install videoreg-0.1.gem
 
     echo "Information about plugged devices:"
