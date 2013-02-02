@@ -1,4 +1,18 @@
-### Составляется конфиг-файл config.rb:
+## Videoreg: script for continuous video recording from the plugged webcams 
+
+### Prerequisites: you will need to install the required libraries
+
+RabbitMQ and Ruby are required to use this script.
+
+```bash
+sudo echo "deb http://www.rabbitmq.com/debian/ testing main" >> /etc/apt/sources.list
+sudo wget http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
+sudo apt-key add rabbitmq-signing-key-public.asc
+sudo apt-get update
+apt-get install -y mencoder ffmpeg qc-usb-utils v4l-utils rabbitmq-server ruby1.9.1 rubygems ruby1.9.1-dev
+```
+
+### Then write the configuration file according to your setup:
 
 ```ruby
 	reg {
@@ -40,7 +54,7 @@
 	mq_host     'localhost'
 ```
 
-### После установки скриптов на машине запуск регистрации происходит при помощи команды videoreg:
+### After the installation you are able to manage the process using 'videoreg' command:
 
 ```
 	$ videoreg -h
@@ -61,7 +75,7 @@
 	    -U, --udev                       Generate udev rules for current config
 	    -I, --info                       Show info about plugged devices
 ```
-### Информация о текущем статусе демона:
+### To get the current daemon status:
 
 ```
 	$  videoreg -c config.rb -e
@@ -72,19 +86,19 @@
 	/dev/webcam1: 	 [RUNNING]
 	/dev/webcam2: 	 [NO DEVICE]
 ```
-### Запуск демона:
+### To run the daemon:
 
 ```
 	$ videoreg -c config.rb
 	Daemon has started successfully
 ```
-### Остановка:
+### To stop the daemon:
 
 ```
 	$ videoreg -c config.rb --k
 	Stopped PID: 3870 at /tmp/videoreg.pid
 ```
-### Остановить конкретный регистратор (для определённого устройства):
+### To stop recording from the specified device:
 
 ```
 	$ videoreg -c config.rb -H /dev/webcam0
@@ -100,7 +114,7 @@
 	/dev/webcam1: 	 [RUNNING]
 	/dev/webcam2: 	 [NO DEVICE]
 ```
-### Запустить конкретный регистратор:
+### To run recording from the specified device:
 
 ```
 	$ videoreg -c config.rb -r /dev/webcam0
@@ -116,7 +130,7 @@
 	/dev/webcam1: 	 [RUNNING]
 	/dev/webcam2: 	 [NO DEVICE]
 ```
-### Приостановить регистратор:
+### To pause the device:
 
 ```
 	$ videoreg -c config.rb -P /dev/webcam0
@@ -132,7 +146,7 @@
 	/dev/webcam1: 	 [RUNNING]
 	/dev/webcam2: 	 [NO DEVICE]
 ```
-### Возобновить регистратор:
+### To resume the device:
 
 ```
 	$ videoreg -c config.rb -R /dev/webcam0
@@ -148,14 +162,14 @@
 	/dev/webcam1: 	 [RUNNING]
 	/dev/webcam2: 	 [NO DEVICE]
 ```
-### Получить информацию о подключённых камерах:
+### Get the information about the plugged webcams:
 
 ```
 	$ videoreg -I
 	usb1[1-1] --> /dev/webcam0
 	usb2[2-1] --> /dev/webcam1
 ```
-### Сгенерировать файл с правилами udev:
+### To generate the udev rules file (create the user-friendly symlinks to the webcam devices):
 
 ```
 	$ videoreg -U
