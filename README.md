@@ -9,10 +9,11 @@ sudo echo "deb http://www.rabbitmq.com/debian/ testing main" >> /etc/apt/sources
 sudo wget http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
 sudo apt-key add rabbitmq-signing-key-public.asc
 sudo apt-get update
-apt-get install -y mencoder ffmpeg qc-usb-utils v4l-utils rabbitmq-server ruby1.9.1 rubygems ruby1.9.1-dev
+sudo apt-get install -y mencoder ffmpeg qc-usb-utils v4l-utils rabbitmq-server ruby1.9.1 rubygems ruby1.9.1-dev
+sudo gem install videoreg
 ```
 
-### Then write the configuration file according to your setup:
+### Then write the configuration file according to your setup (give it a name "config.rb", for example)
 
 ```ruby
 	reg {
